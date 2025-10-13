@@ -161,7 +161,7 @@ useEffect(() => {
 
 - EdgeTPU 하드웨어 가속과 2단계 폴백 전략(얼굴 → 사람)을 통해 사용자 위치를 실시간으로 추적하고, EMA 필터링으로 노이즈를 제거하여 리니어 액추에이터를 정밀 제어하는 핵심 로직입니다.
 
-```tsx
+```python
 # height_worker.py - EdgeTPU 가속 객체 감지
 
 # 1️⃣ EdgeTPU 모델 로드 (하드웨어 가속)
@@ -211,7 +211,7 @@ ema_y = 0.3 * new_value + 0.7 * ema_y  # 부드러운 움직임
 
 - GPIO 펄스 제어를 통해 스텝 모터를 정밀하게 구동하고, 다중 한계 검증과 실시간 높이 저장을 통해 하드웨어 안전성을 보장하며, 프로그램 종료 시 자동 원점 복귀를 수행하는 핵심 로직입니다.
 
-```tsx
+```python
 # linear_actuator_controller.py - 액추에이터 안전 제어
 
 # 1️⃣ 한계 검증 (파일 기반 상태 관리)
@@ -348,7 +348,7 @@ atexit.register(on_shutdown)  # 종료 훅 등록
 - PCA(주성분 분석)를 통해 얼굴의 3D 좌표계를 생성하고, 양안 시선 벡터를 융합하여 화면 좌표로 변환함으로써 고개 회전에도 정확한 시선 추적을 수행하는 핵심 로직입니다.
 - 참고 오픈소스: https://github.com/JEOresearch/EyeTracker
 
-```tsx
+```python
 # eye_tracking_worker.py - 3D 기하학 기반 시선 추적
 
 # 1️⃣ PCA로 얼굴 3D 좌표계 생성

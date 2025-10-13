@@ -53,9 +53,9 @@
 | 구분                    | 기술                                                                                                                                                                                                                                                                                                          |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **프론트엔드**          | React.js, Next.js, TypeScript, react-query, zustand, Electron,                                                                                                                                                                                                                                                |
-| **백엔드**              | Java, Spring Boot                                                                                                                                                                                                                                                                                             |
-| **AI/ML**               | Mediapipe, OpenCV, PyCoral                                                                                                                                                                                                                                                                                    |
-| **하드웨어 제어 (IoT)** | Python, websockets                                                                                                                                                                                                                                                                                            |
+| **백엔드**              | Java, Spring Boot, Gemini API                                                                                                                                                                                                                                                                                            |
+| **AI/ML**               | MediaPipe, OpenCV, PyCoral, TensorFlowLite, MobileNet-V2                                                                                                                                                                                                                                                                                    |
+| **하드웨어 제어 (IoT)** | Python, WebSockets                                                                                                                                                                                                                                                                                            |
 | **데이터베이스**        | MongoDB, MySQL                                                                                                                                                                                                                                                                                                |
 | **클라우드**            | AWS (EC2 · S3 · CloudFront · Route53)                                                                                                                                                                                                                                                                         |
 | **하드웨어 구성**       | 라즈베리파이 4 Model B (8GB RAM), 라즈베리파이 카메라모듈 V2, 리니어 엑추에이터, TB6600 스테핑 모터 드라이버, DC 24V 파워서플라이, 적외선 인체 감지센서(HC-SR501), 15.6인치 정전식 터치 디스플레이, 노이즈 억제·방향 인식 마이크 (Seeed ReSpeaker Mic Array), DC-DC 컨버터(3.3V 출력), 점퍼와이어 및 커넥터류 |
@@ -64,7 +64,7 @@
 
 <div align="center">
 
-| **정한울** (_[ @jho7535 ](https://github.com/jho7535)_) | **강은송** (_[ @kangeunsong ](https://github.com/kangeunsong)_) | **김도현** (_[ @kdhqwe1030 ](https://github.com/kdhqwe1030)_) | **김도영 멘토** |
+| **정한울** (_[@jho7535](https://github.com/jho7535)_) | **강은송** (_[@kangeunsong](https://github.com/kangeunsong)_) | **김도현** (_[@kdhqwe1030](https://github.com/kdhqwe1030)_) | **김도영 멘토** |
 |:---:|:---:|:---:|:---:|
 | <img src="./file/profile/hanuljeong.jpg" alt="정한울" style="height:240px; width:180px; object-fit:cover; border-radius:8px;"> | <img src="./file/profile/kangeunsong.jpeg" alt="강은송" style="height:240px; width:180px; object-fit:cover; border-radius:8px;"> | <img src="./file/profile/dohyun.png" alt="김도현" style="height:240px; width:180px; object-fit:cover; border-radius:8px;"> | <img src="./file/profile/doyeong.jpeg" alt="김도영" style="height:240px; width:180px; object-fit:cover; border-radius:8px;"> |
 |  • 백엔드 개발<br>• 서버 관리 | • 하드웨어 제어<br>• AI 모델 개발 | • 프론트엔드 개발<br>• UI/UX 설계 | • 프로젝트 멘토<br>• 기술 자문 |
@@ -75,16 +75,13 @@
 
 ## 💡 3. 시스템 구성도
 
-#### 🧩 서비스 구성도
+#### 🧩 시스템 아키텍처
 
-<div style="background-color:white; border-radius:12px;"><img src="./file/img/architecture.png" alt="아키텍처"/></div>
+<img src="./file/img/architecture.png" width="100%" height="100%" />
 
-#### 🗂️ 엔티티 관계도
+#### 🗂️ ERD
 
-image
-
-> (참고) S/W 구성도, H/W 구성도, 서비스 흐름도 등을 작성합니다.  
-> 시스템의 동작 과정 등을 추가할 수도 있습니다.
+<img src="./file/img/ERD.png" width="100%" height="100%" />
 
 <br>
 
@@ -92,7 +89,7 @@ image
 
 ## 📽️ 4. 작품 소개영상
 
-[![한이음 드림업 프로젝트 소개](https://img.youtube.com/vi/61OIRqonIQM/0.jpg)](https://www.youtube.com/watch?v=61OIRqonIQM)
+[![한이음 드림업 프로젝트 소개](./file/img/youtube_thumbnail.png)](https://www.youtube.com/watch?v=61OIRqonIQM)
 
 <br>
 

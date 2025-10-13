@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* 루트 CSS 변수 정의 (라이트 모드) */
+  :root {
+    --background: 255 255 255; /* white */
+    --foreground: 15 23 42; /* neutral-900 */
+    --card: 255 255 255; /* white */
+    --card-foreground: 15 23 42; /* neutral-900 */
+    --primary: 59 130 246; /* primary-500 */
+    --primary-foreground: 255 255 255; /* white */
+    --secondary: 241 245 249; /* neutral-100 */
+    --secondary-foreground: 15 23 42; /* neutral-900 */
+    --muted: 241 245 249; /* neutral-100 */
+    --muted-foreground: 100 116 139; /* neutral-500 */
+    --border: 226 232 240; /* neutral-200 */
+    --input: 226 232 240; /* neutral-200 */
+    --ring: 59 130 246; /* primary-500 */
+  }
+
+  /* 다크 모드 CSS 변수 */
+  .dark {
+    --background: 15 23 42; /* neutral-900 */
+    --foreground: 248 250 252; /* neutral-50 */
+    --card: 30 41 59; /* neutral-800 */
+    --card-foreground: 248 250 252; /* neutral-50 */
+    --primary: 59 130 246; /* primary-500 */
+    --primary-foreground: 255 255 255; /* white */
+    --secondary: 30 41 59; /* neutral-800 */
+    --secondary-foreground: 248 250 252; /* neutral-50 */
+    --muted: 30 41 59; /* neutral-800 */
+    --muted-foreground: 148 163 184; /* neutral-400 */
+    --border: 51 65 85; /* neutral-700 */
+    --input: 51 65 85; /* neutral-700 */
+    --ring: 59 130 246; /* primary-500 */
+  }
+
+  /* 기본 스타일 설정 */
+  * {
+    @apply border-border;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  /* 자주 사용할 컴포넌트 클래스들 */
+  .btn-primary {
+    @apply bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg font-medium transition-colors;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary hover:bg-secondary/80 text-secondary-foreground px-4 py-2 rounded-lg font-medium transition-colors;
+  }
+
+  .card {
+    @apply bg-card text-card-foreground rounded-lg border shadow-sm;
+  }
+}
+
+@keyframes kioskMove {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-60px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.animate-kioskMove {
+  animation: kioskMove 6s ease-in-out infinite;
+}
+
+.bg-circle {
+  @apply absolute rounded-full bg-[rgba(255,255,255,0.08)];
+}

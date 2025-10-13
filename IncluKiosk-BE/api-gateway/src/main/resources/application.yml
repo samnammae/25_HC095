@@ -1,0 +1,119 @@
+server:
+  port: 8000 # API 게이트웨이의 포트 번호입니다.
+
+spring:
+  application:
+    name: api-gateway # 게이트웨이 자체의 이름
+
+  cloud:
+    gateway:
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: true
+          routes:
+            # Auth 서비스 라우팅 규칙
+            - id: auth-service-route
+              uri: lb://auth-service # 로드 밸런싱을 통해 auth-service로 라우팅
+              predicates:
+                - Path=/api/auth/**
+
+            # Admin 서비스 라우팅 규칙
+            - id: admin-service-route
+              uri: lb://admin-service # 로드 밸런싱을 통해 admin-service로 라우팅
+              predicates:
+                - Path=/api/admin/**
+              filters:
+                - AuthorizationHeader
+
+            # Menu 서비스 라우팅 규칙
+            - id: menu-service-route
+              uri: lb://menu-service # 로드 밸런싱을 통해 menu-service로
+              predicates:
+                - Path=/api/menu/**
+              filters:
+                - AuthorizationHeader
+
+            # Order 서비스 라우팅 규칙
+            - id: order-service-route
+              uri: lb://order-service # 로드 밸런싱을 통해 order-service로
+              predicates:
+                - Path=/api/order/**
+              filters:
+                - AuthorizationHeader
+
+            # Chatbot 서비스 라우팅 규칙
+            - id: chatbot-service-route
+              uri: lb://chatbot-service # 로드 밸런싱을 통해 chatbot-service
+              predicates:
+                - Path=/api/chatbot/**
+              filters:
+                  - AuthorizationHeader
+          default-filters:
+            - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials
+          globalcors:
+            cors-configurations:
+              '[/**]': # 모든 경로에 적용
+                allowedOrigins:
+                  - "http://localhost:3000" # React, Vue.js 등의 기본 포트
+                  - "http://localhost:4200" # Angular 기본 포트
+                  - "http://localhost:5173" # Vite (React, Vue) 등의 포트
+                  - "http://127.0.0.1:3000" # localhost 대신 127.0.0.1 사용하는 경우
+                  - "http://localhost:8000" # API 게이트웨이 자체의 포트
+                  - "http://inclukiosk-fe.s3-website.ap-northeast-2.amazonaws.com"
+                  - "http://dap3hz5p3144z.cloudfront.net"
+                  - "https://dap3hz5p3144z.cloudfront.net"
+                  - "http://ec2-3-36-56-69.ap-northeast-2.compute.amazonaws.com:3000"
+                  - "http://inclukiosk.com"
+                  - "https://inclukiosk.com"
+                  - "http://www.inclukiosk.com"
+                  - "https://www.inclukiosk.com"
+                allowedMethods:
+                  - GET
+                  - POST
+                  - PUT
+                  - PATCH
+                  - DELETE
+                  - OPTIONS
+                allowedHeaders: "*"
+                allowCredentials: true # <--- 자격 증명(쿠키, 인증 헤더) 허용
+                maxAge: 3600
+
+eureka:
+  client:
+    # 도커 컴포즈 네트워크 내에서 유레카 서버의 서비스 이름을 사용합니다.
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/ # 'eureka-server'는 docker-compose.yml에 정의된 유레카 서비스 이름
+    register-with-eureka: true
+    fetch-registry: true
+
+springdoc:
+  swagger-ui:
+    urls:
+      - name: Auth Service API
+        url: /api/auth/v3/api-docs
+      - name: Admin Service API
+        url: /api/admin/v3/api-docs
+      - name: Order Service API
+        url: /api/order/v3/api-docs
+      - name: Menu Service API
+        url: /api/menu/v3/api-docs
+      - name: Chatbot Service API
+        url: /api/chatbot/v3/api-docs
+    path: /swagger-ui.html
+
+jwt:
+  secret: ${JWT_SECRET}
+
+logging:
+  level:
+    # 스프링 시큐리티의 모든 동작을 추적
+    org.springframework.security: TRACE
+    # 게이트웨이의 라우팅, 필터 동작을 추적
+    org.springframework.cloud.gateway: TRACE
+    # 기존 CORS 및 웹서버 로그도 유지
+    org.springframework.web.cors: TRACE
+    org.springframework.web.server: TRACE
+    com.samnammae.api_gateway.filter: TRACE

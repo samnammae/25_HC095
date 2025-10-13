@@ -80,6 +80,11 @@
 
 ## 💡 3. 시스템 구성도
 
+#### 🏗️ 전체 시스템 흐름도
+<img src="./file/img/flowchart.png" width="100%" height="100%" />
+
+<br>
+
 #### 🧩 시스템 아키텍처
 
 <img src="./file/img/architecture.png" width="100%" height="100%" />

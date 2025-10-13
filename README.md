@@ -157,7 +157,7 @@ useEffect(() => {
 }, [isConnected]);
 ```
 
-### 5-2 EdgeTPU 기반 실시간 사용자 추적
+### 5-2. EdgeTPU 기반 실시간 사용자 추적
 
 - EdgeTPU 하드웨어 가속과 2단계 폴백 전략(얼굴 → 사람)을 통해 사용자 위치를 실시간으로 추적하고, EMA 필터링으로 노이즈를 제거하여 **리니어 액추에이터 제어 함수(5-3)를 호출**하는 핵심 로직입니다.
 
@@ -207,7 +207,7 @@ ema_y = 0.3 * new_value + 0.7 * ema_y  # 부드러운 움직임
 
 ```
 
-### 5-3 리니어 액추에이터 정밀 제어 및 다중 안전장치
+### 5-3. 리니어 액추에이터 정밀 제어 및 다중 안전장치
 
 - **AI 비전 시스템(5-2)의 판단에 따라** GPIO 펄스 제어를 통해 스텝 모터를 정밀하게 구동하고, 다중 한계 검증과 실시간 높이 저장을 통해 하드웨어 안전성을 보장하며, 프로그램 종료 시 자동 원점 복귀를 수행하는 핵심 로직입니다.
 
@@ -343,7 +343,7 @@ def on_shutdown():
 atexit.register(on_shutdown)  # 종료 훅 등록
 ```
 
-### 5-4 PCA 기반 3차원 시선 추적
+### 5-4. PCA 기반 3차원 시선 추적
 
 - PCA(주성분 분석)를 통해 얼굴의 3D 좌표계를 생성하고, 양안 시선 벡터를 융합하여 화면 좌표로 변환함으로써 고개 회전에도 정확한 시선 추적을 수행하는 핵심 로직입니다.
 - 참고 오픈소스: https://github.com/JEOresearch/EyeTracker
@@ -396,4 +396,60 @@ def calibrate():
     # 화면 중앙을 보고 있다고 가정하고 오프셋 계산
     calibration_offset_yaw = -raw_yaw
     calibration_offset_pitch = -raw_pitch
+```
+
+### 5-5. LLM 기반 챗봇 응답 처리
+
+- 사용자 발화를 받아 **Gemini LLM**을 통해 응답을 생성하고, **주문 요청**과 **일반 대화**를 구분하여 처리하는 백엔드 챗봇 서비스의 핵심 로직입니다. MSA 구조에 따라 주문 발생 시 **Order Service**와 통신합니다.
+
+```java
+// [핵심 로직] ChatService.processChat()
+// - conversationRepository: 세션별 대화 기록 조회 및 저장
+// - geminiPromptService: 메뉴 정보, 대화 히스토리 등을 조합하여 LLM 프롬프트 생성
+// - geminiClient: Google Gemini API 호출
+// - orderServiceClient: 주문 요청 발생 시 외부 Order Service API 호출
+
+@Transactional
+public ChatResponse processChat(Long storeId, String sessionId, String userMessage, String managedStoreIds, String storeName) {
+    
+    // 1️⃣ 대화 기록 조회 또는 생성 (세션 기반 대화 관리)
+    Conversation conversation = conversationRepository.findBySessionId(sessionId)
+            .orElseGet(() -> new Conversation(sessionId));
+
+    // 2️⃣ 현재 사용자 메시지를 대화 기록에 추가
+    conversation.addMessage(Message.of("USER", userMessage));
+
+    // 3️⃣ Gemini에 보낼 프롬프트 생성 (시스템 프롬프트 + 메뉴 데이터 + 대화 히스토리)
+    String prompt = geminiPromptService.createPrompt(storeId, conversation, managedStoreIds);
+
+    // 4️⃣ Gemini API 호출하여 AI의 원본 응답 받기
+    GeminiResponse geminiResponse = geminiClient.call(new GeminiRequest(prompt));
+    String aiRawResponse = geminiResponse.extractText();
+
+    // 5️⃣ AI 응답 분석 후 최종 메시지 결정
+    String finalAiMessage;
+    Optional<OrderRequestDto> orderRequestOpt = parseOrderAction(aiRawResponse, storeId, storeName);
+
+    if (orderRequestOpt.isPresent()) {
+        // 5-1. 주문 요청인 경우: Order Service 호출
+        OrderRequestDto orderRequest = orderRequestOpt.get();
+        
+        try {
+            var orderApiResponse = orderServiceClient.placeOrder(orderRequest);
+            finalAiMessage = "주문이 완료되었습니다. 주문번호는 " + orderApiResponse.getData().getOrderNumber() + "입니다.";
+        } catch (Exception e) {
+            finalAiMessage = "주문 처리 중 오류가 발생했습니다. 다시 시도해 주세요.";
+        }
+    } else {
+        // 5-2. 일반 대화인 경우: Gemini 응답 그대로 사용
+        finalAiMessage = aiRawResponse;
+    }
+
+    // 6️⃣ 최종 AI 응답을 대화 기록에 저장
+    conversation.addMessage(Message.of("AI", finalAiMessage));
+    conversationRepository.save(conversation);
+
+    // 7️⃣ 클라이언트에 전달할 최종 응답 생성
+    return new ChatResponse(conversation.getSessionId(), finalAiMessage);
+}
 ```

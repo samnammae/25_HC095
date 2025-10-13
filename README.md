@@ -62,12 +62,14 @@
 
 ## 🧑🏻‍💻 2. 팀원 소개
 
-|                                                             **김도영 멘토**                                                              |                                                                                  **정한울**                                                                                   |                                                                                       **강은송**                                                                                        |                                                                                   **김도현**                                                                                    |
-| :--------------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-| <img src="./file/profile/doyeong.jpeg" alt="김도영" style="height:240px; width:180px; object-fit:cover; border-radius:8px; "><br/> <br/> | <img src="./file/profile/hanuljeong.jpg" alt="정한울" style="height:240px; width:180px; object-fit:cover; border-radius:8px;"><br/>_[ @jho7535 ](https://github.com/jho7535)_ | <img src="./file/profile/kangeunsong.jpeg" alt="강은송" style="height:240px; width:180px; object-fit:cover; border-radius:8px;"><br/>_[ @kangeunsong ](https://github.com/kangeunsong)_ | <img src="./file/profile/dohyun.png" alt="김도현" style="height:240px; width:180px; object-fit:cover; border-radius:8px;"><br/>_[ @kdhqwe1030 ](https://github.com/kdhqwe1030)_ |
-|                                                     • 프로젝트 멘토 <br> • 기술 자문                                                     |                                                                        • 백엔드 개발 <br> • 서버 관리                                                                         |                                                                           • 하드웨어 제어 <br> • AI 모델 개발                                                                           |                                                                       • 프론트엔드 개발 <br> • UI/UX 설계                                                                       |
+<div align="center">
 
-<br>
+| **정한울** (_[ @jho7535 ](https://github.com/jho7535)_) | **강은송** (_[ @kangeunsong ](https://github.com/kangeunsong)_) | **김도현** (_[ @kdhqwe1030 ](https://github.com/kdhqwe1030)_) | **김도영 멘토** |
+|:---:|:---:|:---:|:---:|
+| <img src="./file/profile/hanuljeong.jpg" alt="정한울" style="height:240px; width:180px; object-fit:cover; border-radius:8px;"> | <img src="./file/profile/kangeunsong.jpeg" alt="강은송" style="height:240px; width:180px; object-fit:cover; border-radius:8px;"> | <img src="./file/profile/dohyun.png" alt="김도현" style="height:240px; width:180px; object-fit:cover; border-radius:8px;"> | <img src="./file/profile/doyeong.jpeg" alt="김도영" style="height:240px; width:180px; object-fit:cover; border-radius:8px;"> |
+|  • 백엔드 개발<br>• 서버 관리 | • 하드웨어 제어<br>• AI 모델 개발 | • 프론트엔드 개발<br>• UI/UX 설계 | • 프로젝트 멘토<br>• 기술 자문 |
+
+</div>
 
 <br>
 

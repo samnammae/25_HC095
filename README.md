@@ -103,30 +103,55 @@
 
 ## 💡 5. 핵심 소스코드
 
-소스코드 설명 : API를 활용해서 자동 배포를 생성하는 메서드입니다.
+### 5-1. WebSocket 통신
 
-```java
-private static void start_deployment(JsonObject jsonObject) {
-    String user = jsonObject.get("user").getAsJsonObject().get("login").getAsString();
-    Map<String, String> map = new HashMap<>();
-    map.put("environment", "QA");
-    map.put("deploy_user", user);
-    Gson gson = new Gson();
-    String payload = gson.toJson(map);
+ - 라즈베리파이와의 WebSocket 통신을 통해 STT/TTS 흐름을 제어하고, 백엔드 REST API(ChatAPI) 를 통해 챗봇 대화를 처리하는 핵심 로직입니다.
 
-    try {
-        GitHub gitHub = GitHubBuilder.fromEnvironment().build();
-        GHRepository repository = gitHub.getRepository(
-                jsonObject.get("head").getAsJsonObject()
-                        .get("repo").getAsJsonObject()
-                        .get("full_name").getAsString());
-        GHDeployment deployment =
-                new GHDeploymentBuilder(
-                        repository,
-                        jsonObject.get("head").getAsJsonObject().get("sha").getAsString()
-                ).description("Auto Deploy after merge").payload(payload).autoMerge(false).create();
-    } catch (IOException e) {
-        e.printStackTrace();
+```tsx
+// [핵심 함수] Chat.tsx
+// - sendMessage(): 프론트 → 라즈베리파이 명령 전송
+// - chatAPI.sendChat(): 프론트 → 백엔드 챗봇 대화 요청
+// - case 구문: 라즈베리파이 → 프론트로 수신되는 메시지 제어
+
+useEffect(() => {
+  if (!isConnected) return;
+
+  const handle = async (msg: SocketMessage) => {
+    switch (msg.type) {
+
+      // 1️⃣ 안내 음성 종료 → STT 시작 (라즈베리파이로부터 수신)
+      case "END_GUIDE":
+        sendMessage({ type: "STT_ON" }); // 라즈베리파이에 음성인식 시작 명령
+        setIsListening(true);
+        break;
+
+      // 2️⃣ 음성 인식 완료(STT_OFF) → 백엔드로 사용자 발화 전달
+      case "STT_OFF":
+        setChatLogs(prev => […prev, { message: msg.message, isBot: false }]);
+
+        const res = await chatAPI.sendChat(shopId, {
+          sessionId,
+          message: msg.message,
+          storeId: Number(shopId),
+          storeName: shopName,
+        });
+
+        const answer = res?.aiMessage || "죄송합니다, 답변을 불러오지 못했습니다.";
+        setChatLogs(prev => […prev, { message: answer, isBot: true }]);
+
+        // 챗봇 응답을 라즈베리파이에 전달 → 음성 출력(TTS)
+        sendMessage({ type: "TTS_ON", message: answer });
+        break;
+
+      // 3️⃣ 음성 출력 종료(TTS_OFF) → 다음 발화 대기
+      case "TTS_OFF":
+        sendMessage({ type: "STT_ON" }); // 다음 음성인식 시작
+        setIsListening(true);
+        break;
     }
-}
+  };
+
+  addOnMessage(handle);
+  return () => removeOnMessage(handle);
+}, [isConnected]);
 ```

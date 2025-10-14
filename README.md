@@ -72,7 +72,7 @@
 |                                     **정한울** (_[@jho7535](https://github.com/jho7535)_)                                      |                                  **강은송** (_[@kangeunsong](https://github.com/kangeunsong)_)                                   |                                **김도현** (_[@kdhqwe1030](https://github.com/kdhqwe1030)_)                                 |                                                          **김도영**                                                          |
 | :----------------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------: |
 | <img src="./file/profile/hanuljeong.jpg" alt="정한울" style="height:240px; width:180px; object-fit:cover; border-radius:8px;"> | <img src="./file/profile/kangeunsong.jpeg" alt="강은송" style="height:240px; width:180px; object-fit:cover; border-radius:8px;"> | <img src="./file/profile/dohyun.png" alt="김도현" style="height:240px; width:180px; object-fit:cover; border-radius:8px;"> | <img src="./file/profile/doyeong.jpeg" alt="김도영" style="height:240px; width:180px; object-fit:cover; border-radius:8px;"> |
-|                                                  • 백엔드 개발<br>• 서버 관리                                                  |                                                • 하드웨어 제어<br>• AI 모델 개발                                                 |                                             • 프론트엔드 개발<br>• UI/UX 설계                                              |                                                • 프로젝트 멘토<br>• 기술 자문                                                |
+|                                                  • 백엔드 개발<br>• 서버 관리                                                  |                                                • 하드웨어 제어<br>• AI 기능 개발                                                 |                                             • 프론트엔드 개발<br>• UI/UX 설계                                              |                                                • 프로젝트 멘토<br>• 기술 자문                                                |
 
 </div>
 
@@ -81,6 +81,7 @@
 ## 💡 3. 시스템 구성도
 
 #### 🏗️ 전체 시스템 흐름도
+
 <img src="./file/img/flowchart.png" width="100%" height="100%" />
 
 <br>
@@ -416,7 +417,7 @@ def calibrate():
 
 @Transactional
 public ChatResponse processChat(Long storeId, String sessionId, String userMessage, String managedStoreIds, String storeName) {
-    
+
     // 1️⃣ 대화 기록 조회 또는 생성 (세션 기반 대화 관리)
     Conversation conversation = conversationRepository.findBySessionId(sessionId)
             .orElseGet(() -> new Conversation(sessionId));
@@ -438,7 +439,7 @@ public ChatResponse processChat(Long storeId, String sessionId, String userMessa
     if (orderRequestOpt.isPresent()) {
         // 5-1. 주문 요청인 경우: Order Service 호출
         OrderRequestDto orderRequest = orderRequestOpt.get();
-        
+
         try {
             var orderApiResponse = orderServiceClient.placeOrder(orderRequest);
             finalAiMessage = "주문이 완료되었습니다. 주문번호는 " + orderApiResponse.getData().getOrderNumber() + "입니다.";

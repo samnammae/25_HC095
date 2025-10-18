@@ -102,7 +102,7 @@
 
 ## 📽️ 4. 작품 소개영상
 
-[![한이음 드림업 프로젝트 소개](./file/img/youtube_thumbnail.png)](https://www.youtube.com/watch?v=61OIRqonIQM)
+[![한이음 드림업 프로젝트 소개](./file/img/youtube_thumbnail.png)](https://youtu.be/D_QDsTdd3jk)
 
 <br>
 

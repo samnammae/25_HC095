@@ -19,21 +19,21 @@ const InactivityWatcher = () => {
 
   //window함수작동으로 인한 추가
   useEffect(() => {
-    if (isLocked) nav("/adjust"); // 👇 강제 잠금 시에도 /adjust 이동
+    if (isLocked) nav("/adjust");
   }, [isLocked, nav]);
 
   // false가 된 순간에만 1번 실행
   useEffect(() => {
     if (!isLocked) {
       sendMessage({ type: "PIR_OFF" }); //CASE 2-2
-      console.log("잠금해제/라즈베리파이에게 PIR_OFF 전송");
+      console.log("잠금해제/라즈베리파이에게 PIR_OFF 전송 ");
     }
   }, [isLocked, sendMessage]);
 
   //활동 시 잠금해제 기능
   useEffect(() => {
     if (!hasToken) return;
-    const events = ["mousemove", "keydown", "click", "scroll", "touchstart"];
+    const events = ["click", "scroll", "touchstart"];
 
     const handleActivity = () => {
       setLocked(false); // 활동 → 잠금 해제

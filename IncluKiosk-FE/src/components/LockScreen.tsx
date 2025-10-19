@@ -9,11 +9,17 @@ const LockScreen = () => {
   const { sendMessage, addOnMessage, removeOnMessage } = useSocketStore();
 
   useEffect(() => {
-    if (isLocked) sendMessage({ type: "PIR_ON" }); //CASE 1
+    if (isLocked) {
+      sendMessage({ type: "ALL_RESET" });
+      setTimeout(() => {
+        sendMessage({ type: "PIR_ON" }); //CASE 1
+      }, 1000);
+    }
 
     //CASE 2-1
     const handle = (msg: SocketMessage) => {
       if (msg.type === "PIR_DETECTED") {
+        sendMessage({ type: "PIR_OFF" });
         setLocked(false); // 플래그 → 잠금 해제
         resetTimer();
       }

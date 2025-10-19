@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { setShopData } from "../../apis/setShopData";
 import { SocketMessage, useSocketStore } from "../../stores/socketStore";
+import TranslateContainer from "../../components/TranslateContainer";
 interface StyledProps {
   $isHovering?: boolean;
   $progress?: number;
@@ -21,13 +22,16 @@ const StartPge = () => {
     connect();
   }, [connect]);
 
+  //마운트 시 mode_select_on
+  useEffect(() => {
+    sendMessage({ type: "MODE_SELECT_ON" }); //CASE 4
+  }, []);
+
   useEffect(() => {
     if (!isConnected) return;
-    sendMessage({ type: "MODE_SELECT_ON" }); //CASE 4
-
     //CASE 5-1
     const handle = (msg: SocketMessage) => {
-      if (msg.type === "CHAT_ORDER_ON") {
+      if (msg.type === "FIST_DETECTED") {
         nav("/chat");
         sendMessage({ type: "CHAT_ORDER_ON" }); //CASE 5-2
       }
@@ -40,6 +44,11 @@ const StartPge = () => {
   useEffect(() => {
     const selectedShopId = Number(localStorage.getItem("shopId"));
     setShopData(selectedShopId);
+  }, []);
+
+  //전 페이지 마우스 위치 초기화 로직
+  useEffect(() => {
+    window.dispatchEvent(new MouseEvent("mousemove"));
   }, []);
 
   const [isHovering, setIsHovering] = useState(false);
@@ -83,6 +92,7 @@ const StartPge = () => {
 
   return (
     <BaseContainer>
+      <TranslateContainer />
       {startBackground && <Background src={startBackground} />}
       <LogoWrapper>
         {logoimg ? <LogoContainer src={logoimg} /> : <Title>{name}</Title>}
@@ -219,6 +229,7 @@ const OrderButton = styled.div`
 `;
 
 const OrderText = styled.div`
+  text-align: center;
   font-size: ${({ theme }) => theme.fonts.sizes.lg};
   font-weight: ${({ theme }) => theme.fonts.weights.bold};
   color: ${({ theme }) => theme.colors.main};
@@ -279,7 +290,7 @@ const ProgressText = styled.div`
   position: relative;
   z-index: 1;
   background-color: white;
-  padding: 0.5rem 1rem;
+  padding: 3rem 1rem;
   border-radius: ${({ theme }) => theme.borderRadius.md};
   box-shadow: ${({ theme }) => theme.shadows.sm};
 `;

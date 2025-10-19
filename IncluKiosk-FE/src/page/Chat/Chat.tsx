@@ -3,9 +3,13 @@ import styled from "styled-components";
 import Header from "../Home/components/Header";
 import { chatAPI } from "../../apis/chat";
 import { useSocketStore, SocketMessage } from "../../stores/socketStore";
-import VoiceStatus from "./VoiceStatusProps";
-import { generateSessionId } from "./getId";
-import ChatTestButton from "./ChatTestButton";
+import VoiceStatus from "./components/VoiceStatusProps";
+import { generateSessionId } from "./components/getId";
+import ChatTestButton from "./components/ChatTestButton";
+import ErrorModal from "./components/ErrorModal";
+import { useNavigate } from "react-router-dom";
+import SuccessModal from "./components/SuccessModal";
+import { useLockStore } from "../../stores/lockStore";
 
 // 메시지 타입 정의
 export interface ChatMessage {
@@ -14,9 +18,15 @@ export interface ChatMessage {
 }
 
 const Chat = () => {
+  //소켓 관련 스토어
   const { connect, sendMessage, addOnMessage, removeOnMessage, isConnected } =
     useSocketStore();
+  const { setLocked } = useLockStore();
+  const { resetTimer } = useLockStore();
+
+  //매장 정보
   const shopId = localStorage.getItem("shopId") || "";
+  const shopName = localStorage.getItem("shopName") || "";
 
   // 대화 세션 ID (대화 시작할 때 1회 생성)
   const [sessionId] = useState(generateSessionId(shopId));
@@ -24,11 +34,12 @@ const Chat = () => {
   const [chatLogs, setChatLogs] = useState<ChatMessage[]>([]);
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  //채팅 쌓였을 시 맨 하단부로 스크롤 기능 구현
-  const bottomRef = useRef<HTMLDivElement | null>(null);
+  const [isEnd, setIsEnd] = useState<"성공" | "실패" | false>(false); //성공 상태
+  const isEndRef = useRef(isEnd);
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }); // 새로운 메시지가 추가될 때마다 맨 아래로 이동
-  }, [chatLogs]);
+    isEndRef.current = isEnd;
+  }, [isEnd]);
+
   // 채팅 animation 기능
   const [visibleTexts, setVisibleTexts] = useState<Record<number, string>>({});
   useEffect(() => {
@@ -59,10 +70,35 @@ const Chat = () => {
     return () => clearInterval(interval);
   }, [chatLogs]);
 
+  //채팅 쌓였을 시 맨 하단부로 스크롤 기능 구현
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
+  }, [chatLogs, visibleTexts]);
+
+  //주문 성공 모달
+  const [isSucOpen, setIsSucOpen] = useState(false);
+  const [sucText, setSucText] = useState("");
+  //에러 모달
+  const [isErrOpen, setIsErrOpen] = useState(false);
+
+  //네비게이션
+  const nav = useNavigate();
   // 소켓 연결
   useEffect(() => {
     connect();
   }, [connect]);
+
+  //챗봇 화면에서 잠금 방지 로직
+  useEffect(() => {
+    if (chatLogs.length > 0) {
+      resetTimer(); // 채팅이 추가될 때마다 타이머 리셋
+      console.log("채팅 발생으로 인해 잠금 타이머 리셋");
+    }
+  }, [chatLogs]);
 
   //소켓 핸들러 구현
   useEffect(() => {
@@ -92,15 +128,32 @@ const Chat = () => {
             ]);
 
             try {
-              // 👉 챗봇 API 호출
+              //  챗봇 API 호출
               const res = await chatAPI.sendChat(shopId, {
                 sessionId,
                 message: msg.message,
+                storeId: Number(shopId),
+                storeName: shopName,
               });
 
               // API 응답(챗봇 답변)
               const answer =
                 res?.aiMessage || "죄송합니다, 답변을 불러오지 못했습니다.";
+
+              //주문 완료/실패 처리
+              if (answer.includes("주문이")) {
+                if (answer.includes("완료")) {
+                  console.log("isEnd변경->성공", isEnd);
+                  setIsEnd("성공");
+                  //CASE 6
+                  setSucText(answer); //성공모달에 메세지 넘겨주기
+                  setIsSucOpen(true); //성공 열기
+                } else if (answer.includes("실패")) {
+                  console.log("isEnd변경->실패", isEnd);
+                  setIsEnd("실패");
+                  setIsErrOpen(true); //에러 모달 열기
+                }
+              }
 
               // 대화창에 챗봇 답변 추가
               setChatLogs((prev) => [
@@ -119,9 +172,40 @@ const Chat = () => {
         // CASE 7-5: 음성 출력 종료 → 다시 STT 시작
         case "TTS_OFF":
           console.log("음성 출력 종료 → 다음 발화 대기");
-          sendMessage({ type: "STT_ON" });
-          setIsListening(true);
-          setIsProcessing(false);
+          const endState = isEndRef.current; //  항상 최신값
+          // 최신 상태 유지용 ref
+          if (endState === "성공") {
+            console.log("🎉 주문 성공 - 리셋 프로세스 시작");
+            (async () => {
+              try {
+                // 잠깐 대기 후 (TTS가 완전히 끝난 다음)
+                await new Promise((r) => setTimeout(r, 1500));
+
+                // 모달 닫기 → 락 전환 → 리셋 순으로
+                setIsSucOpen(false);
+                setLocked(true);
+
+                await new Promise((r) => setTimeout(r, 300)); // UI 반영 대기
+                sendMessage({ type: "ALL_RESET" });
+                console.log("✅ 리셋 신호 보냄");
+
+                setIsEnd(false);
+              } catch (err) {
+                console.error("TTS_OFF 처리 중 에러:", err);
+              }
+            })();
+          } else if (endState === "실패") {
+            console.log("❌ 주문 실패 - 홈으로 복귀");
+            setTimeout(() => {
+              setIsErrOpen(false);
+              nav("/start");
+              setIsEnd(false);
+            }, 1500);
+          } else {
+            sendMessage({ type: "STT_ON" });
+            setIsListening(true);
+            setIsProcessing(false);
+          }
           break;
 
         // CASE 7-6: STT오류의 경우 -> 다시 말해주세요!출력 후 대기
@@ -138,6 +222,7 @@ const Chat = () => {
           setIsListening(false);
           setIsProcessing(true);
           break;
+
         // CASE 7-7: STT오류안내음성 끝난 후-> 프론트에게 끝낫다 말함. -> 프론트 다시 음성인식한다고 말함
         case "ERR_END":
           console.log("라즈베리파이 ERR 안내음성 출력 끝");
@@ -145,6 +230,18 @@ const Chat = () => {
           setIsListening(true);
           setIsProcessing(false);
           break;
+
+        // CASE 7-8: 2번 째 오류 발생 과정 -> 라즈베리에서 음성이 나오고 프론트는 모달 띄우기
+        case "ORDER_CANCEL":
+          setIsErrOpen(true); //에러 모달 열기
+          break;
+
+        // CASE 7-9: 에러 음성이 끝난 뒤 채팅화면 탈출
+        case "CANCEL_END":
+          setIsErrOpen(false); //에러 모달 닫기
+          nav("/start");
+          break;
+
         default:
           console.log("처리되지 않은 메시지:", msg);
       }
@@ -160,42 +257,75 @@ const Chat = () => {
     removeOnMessage,
   ]);
 
+  // // 주문 완료 / 실패 후 후처리 CASE6
+  // useEffect(() => {
+  //   if (!isEnd) return;
+
+  //   if (isEnd === "성공") {
+  //     console.log("🎉 주문 성공! 5초 뒤 잠금 화면으로 이동");
+  //     const timeout = setTimeout(() => {
+  //       setIsSucOpen(false); // 성공 모달 닫기
+  //       sendMessage({ type: "ALL_RESET" }); // 라즈베리파이에 리셋 신호
+  //       setLocked(true); // 잠금 화면 이동
+  //     }, 5000);
+  //     return () => clearTimeout(timeout);
+  //   }
+
+  //   if (isEnd === "실패") {
+  //     console.log("❌ 주문 실패! 5초 뒤 다시 시작 화면으로 이동");
+  //     const timeout = setTimeout(() => {
+  //       setIsErrOpen(false);
+  //       nav("/start");
+  //     }, 5000);
+  //     return () => clearTimeout(timeout);
+  //   }
+  // }, [isEnd, sendMessage, setLocked, nav]);
+
   return (
-    <BaseContainer>
-      <Header />
-      <Background>
-        <ChatTestButton setChatLogs={setChatLogs} />
-        <ChatContainer>
-          <WelcomeMessage>
-            안녕하세요 음성으로 주문을 도와드릴게요.
-            <br />
-            무엇을 드시고 싶으신가요?
-          </WelcomeMessage>
+    <>
+      <ErrorModal isOpen={isErrOpen} />
+      <SuccessModal isOpen={isSucOpen} text={sucText} />
+      <BaseContainer>
+        <Header />
+        <Background>
+          <ChatTestButton setChatLogs={setChatLogs} />
+          <ChatContainer ref={containerRef}>
+            <WelcomeMessage>
+              안녕하세요 음성으로 주문을 도와드릴게요.
+              <br />
+              무엇을 드시고 싶으신가요?
+            </WelcomeMessage>
 
-          {/* 음성 입력/처리 상태 */}
-          <VoiceStatus isListening={isListening} isProcessing={isProcessing} />
+            {/* 음성 입력/처리 상태 */}
+            <VoiceStatus
+              isListening={isListening}
+              isProcessing={isProcessing}
+            />
 
-          {/* 챗봇 로그 */}
-          {chatLogs.map((chat, idx) => {
-            const animatedText = visibleTexts[idx];
-            const isLast = idx === chatLogs.length - 1;
+            {/* 챗봇 로그 */}
+            {chatLogs.map((chat, idx) => {
+              const animatedText = visibleTexts[idx];
+              const isLast = idx === chatLogs.length - 1;
 
-            return (
-              <ChatWrapper key={idx} $isBotMessage={chat.isBot}>
-                {chat.isBot ? (
-                  <BotChat>
-                    {isLast ? animatedText ?? "" : chat.message}
-                  </BotChat>
-                ) : (
-                  <MyChat>{isLast ? animatedText ?? "" : chat.message}</MyChat>
-                )}
-              </ChatWrapper>
-            );
-          })}
-          <div ref={bottomRef} />
-        </ChatContainer>
-      </Background>
-    </BaseContainer>
+              return (
+                <ChatWrapper key={idx} $isBotMessage={chat.isBot}>
+                  {chat.isBot ? (
+                    <BotChat>
+                      {isLast ? animatedText ?? "" : chat.message}
+                    </BotChat>
+                  ) : (
+                    <MyChat>
+                      {isLast ? animatedText ?? "" : chat.message}
+                    </MyChat>
+                  )}
+                </ChatWrapper>
+              );
+            })}
+            {/* <div ref={bottomRef} /> */}
+          </ChatContainer>
+        </Background>
+      </BaseContainer>
+    </>
   );
 };
 
@@ -257,7 +387,7 @@ const ChatWrapper = styled.div<{ $isBotMessage: boolean }>`
 `;
 const ChatBox = styled.div`
   padding: 15px 20px;
-  font-size: ${({ theme }) => theme.fonts.sizes.xs};
+  font-size: ${({ theme }) => theme.fonts.sizes.lg};
   line-height: 1.4;
   max-width: 65%;
   animation: fadeInUp 0.3s ease;

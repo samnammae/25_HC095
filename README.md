@@ -459,3 +459,7 @@ public ChatResponse processChat(Long storeId, String sessionId, String userMessa
     return new ChatResponse(conversation.getSessionId(), finalAiMessage);
 }
 ```
+
+## 📊 6. 발표자료
+
+📄 [IncluKiosk_Presentation.pdf](./file/presentation.pdf)
